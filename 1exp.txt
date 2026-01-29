@@ -1,0 +1,13 @@
+import nltk
+!pip install nltk
+from nltk.tokenize import word_tokenize
+
+nltk.download('punkt')
+nltk.download('punkt_tab')
+
+sentence = "Natural Language Processing is very interesting"
+
+tokens = word_tokenize(sentence)
+
+print("Tokens:")
+print(tokens)
