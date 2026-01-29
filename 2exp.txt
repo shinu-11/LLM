@@ -1,0 +1,71 @@
+# Self-Attention and Multi-Head Attention Visualization
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ---------- Helper functions ----------
+def softmax(x):
+    e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    return e_x / e_x.sum(axis=-1, keepdims=True)
+
+def self_attention(Q, K, V):
+    d_k = Q.shape[-1]
+    scores = np.dot(Q, K.T) / np.sqrt(d_k)
+    weights = softmax(scores)
+    output = np.dot(weights, V)
+    return output, weights
+
+# ---------- Sample input ----------
+# 5 tokens, embedding dimension = 4
+np.random.seed(42)
+X = np.random.rand(5, 4)
+
+# Linear projections (simple matrices)
+Wq = np.random.rand(4, 4)
+Wk = np.random.rand(4, 4)
+Wv = np.random.rand(4, 4)
+
+Q = X @ Wq
+K = X @ Wk
+V = X @ Wv
+
+# ---------- Self-Attention ----------
+output_sa, weights_sa = self_attention(Q, K, V)
+
+plt.figure()
+plt.imshow(weights_sa)
+plt.title("Self-Attention Weights")
+plt.xlabel("Key Tokens")
+plt.ylabel("Query Tokens")
+plt.colorbar()
+plt.show()
+
+# ---------- Multi-Head Attention ----------
+num_heads = 2
+head_dim = 4 // num_heads
+
+multi_head_outputs = []
+all_head_weights = []
+
+for h in range(num_heads):
+    Q_h = Q[:, h*head_dim:(h+1)*head_dim]
+    K_h = K[:, h*head_dim:(h+1)*head_dim]
+    V_h = V[:, h*head_dim:(h+1)*head_dim]
+    
+    out_h, w_h = self_attention(Q_h, K_h, V_h)
+    multi_head_outputs.append(out_h)
+    all_head_weights.append(w_h)
+
+# Concatenate heads
+multi_head_output = np.concatenate(multi_head_outputs, axis=-1)
+
+# ---------- Visualize each head ----------
+for i, w in enumerate(all_head_weights):
+    plt.figure()
+    plt.imshow(w)
+    plt.title(f"Multi-Head Attention - Head {i+1}")
+    plt.xlabel("Key Tokens")
+    plt.ylabel("Query Tokens")
+    plt.colorbar()
+    plt.show()
+
+multi_head_output
